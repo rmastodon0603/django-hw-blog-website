@@ -1,6 +1,10 @@
 from django.shortcuts import render
 
+from django.shortcuts import redirect
+
 from .models import Post, Category, Tag
+
+from .forms import PostForm
 
 def index(request):
     context = {
@@ -19,5 +23,16 @@ def details(request, pk=None):
 
 
 def create(request):
-    context = {}
-    return render(request, 'blog/create.html', context=context)
+    if request.method == "POST":
+        form = PostForm(data=request.POST)
+        if form.is_valid():
+            post = form.save(commit=False)
+            post.published = True
+            post.save()
+            form.save_m2m()
+        return redirect('index')
+
+    form = PostForm()
+
+
+    return render(request, 'blog/create.html', {'form': form})
